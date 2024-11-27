@@ -1,78 +1,123 @@
-## Objetivo do Teste
+# Teste para Desenvolvedor(a) Back-End Node.js/Nest.js
 
-O objetivo deste teste é avaliar a sua habilidade de integrar várias tecnologias e criar uma aplicação funcional que utilize NestJS como framework principal. A aplicação deve incluir as seguintes funcionalidades e tecnologias:
+## Introdução
 
-1. **NestJS**: Framework principal para a aplicação.
-2. **PostgreSQL**: Banco de dados relacional para armazenar dados persistentes.
-3. **Kafka**: Sistema de mensagens distribuído para processamento de dados em tempo real.
-4. **Swagger**: Documentação de API para facilitar o entendimento e a interação com as APIs da aplicação.
-5. **Redis**: Armazenamento em cache e gerenciamento de sessões.
-6. **Docker & Docker Compose**: Para configuração e orquestração do ambiente de desenvolvimento.
+Bem-vindo(a) ao processo seletivo para a posição de **Desenvolvedor(a) Back-End** em nossa equipe! Este teste tem como objetivo avaliar suas habilidades técnicas em Node.js, Nest.js e outras tecnologias mencionadas na descrição da vaga.
 
-## Requisitos do Teste
+## Instruções
 
-1. **Configuração do Ambiente**: Configure o ambiente de desenvolvimento utilizando Docker e Docker Compose para facilitar a replicação e a execução da aplicação.
+- Faça um **fork** deste repositório para o seu GitHub pessoal.
+- Desenvolva as soluções solicitadas abaixo, seguindo as **melhores práticas de desenvolvimento**.
+- Após a conclusão, envie o link do seu repositório para avaliação.
+- Sinta-se à vontade para adicionar qualquer documentação ou comentários que julgar necessário.
 
-2. **Módulo de Usuários**:
-    - Crie um módulo de usuários que permita a criação, leitura, atualização e exclusão (CRUD) de usuários.
-    - Armazene os dados dos usuários no PostgreSQL.
-    - Use entidades e DTOs para estruturar os dados de forma correta.
+## Desafio
 
-3. **Integração com Kafka**:
-    - Configure um consumidor e um produtor Kafka.
-    - Envie eventos para Kafka quando um usuário for criado ou atualizado.
-    - Processe eventos Kafka para executar ações na aplicação (por exemplo, logging, auditoria).
+### Contexto
 
-4. **Documentação com Swagger**:
-    - Adicione documentação Swagger à aplicação.
-    - Certifique-se de que todas as rotas da API estejam documentadas e possam ser testadas via Swagger UI.
+Você foi designado para desenvolver um sistema de gerenciamento de pedidos para um e-commerce. O sistema deve permitir que os clientes:
 
-5. **Cache com Redis**:
-    - Utilize Redis para armazenar em cache dados frequentemente acessados.
-    - Implemente uma estratégia de cache para otimizar a performance da aplicação (por exemplo, cache de resultados de consultas).
+- Criem, visualizem, atualizem e cancelem pedidos.
+- Cada pedido deve conter: identificador do pedido, itens (com quantidade e preço), status do pedido (pendente, processando, enviado, entregue, cancelado), data de criação e atualização.
+- O sistema deve comunicar eventos de criação e atualização de pedidos via **Kafka** para outros serviços (por exemplo, sistema de estoque, notificações).
+- O sistema deve indexar e permitir a busca de pedidos utilizando **Elasticsearch**, proporcionando pesquisas avançadas.
 
-## Critérios de Avaliação
+### Requisitos
 
-1. **Configuração e Estrutura do Projeto**: A estrutura do projeto deve ser clara e organizada. O uso de Docker e Docker Compose para configuração do ambiente de desenvolvimento é um ponto positivo.
-2. **Funcionalidade**: Todas as funcionalidades especificadas devem estar implementadas e funcionando corretamente.
-3. **Integração de Tecnologias**: A integração entre NestJS, PostgreSQL, Kafka, Swagger e Redis deve ser bem feita e eficiente.
-4. **Código Limpo e Bem Documentado**: O código deve ser limpo, bem comentado e seguir boas práticas de desenvolvimento.
-5. **Documentação de API**: A documentação Swagger deve estar completa e facilitar a interação com a API.
+1. **Configuração do Ambiente**
 
-## Passos para Realizar o Teste
+   - Configure um ambiente de desenvolvimento utilizando **Docker** e **Docker-compose**, incluindo:
+     - Aplicação Node.js com **Nest.js**.
+     - Banco de dados **PostgreSQL**.
+     - Servidor **Kafka** (pode utilizar imagens como `bitnami/kafka` ou similares).
+     - **Elasticsearch** para indexação e busca .
+   - A aplicação deve ser iniciada com um único comando (`docker-compose up`).
 
-1. **Configurar o Ambiente**:
-    - Utilize Docker e Docker Compose para configurar e iniciar o PostgreSQL, Kafka e Redis.
-    - Configure as variáveis de ambiente necessárias (por exemplo, credenciais de banco de dados, configuração de Kafka).
+2. **API RESTful**
 
-2. **Implementar o Módulo de Usuários**:
-    - Crie o módulo, controlador, serviço, entidades e DTOs necessários.
-    - Implemente as operações CRUD para usuários.
+   - Implemente uma API RESTful para gerenciamento de pedidos.
+   - Utilize **Nest.js** seguindo as melhores práticas para estruturação de módulos, controladores e serviços.
+   - Utilize **TypeORM** para interação com o banco de dados **PostgreSQL**.
+   - Assegure-se de que as operações de CRUD (Create, Read, Update, Delete) estão implementadas.
 
-3. **Configurar Kafka**:
-    - Crie um consumidor e um produtor Kafka.
-    - Implemente a lógica para enviar e processar eventos Kafka.
+3. **Comunicação via Kafka**
 
-4. **Adicionar Swagger**:
-    - Configure Swagger na aplicação.
-    - Documente todas as rotas da API.
+   - Implemente a publicação de eventos em **Kafka**:
+     - Ao criar um novo pedido, publique um evento `order_created`.
+     - Ao atualizar o status de um pedido, publique um evento `order_status_updated`.
+     - Os eventos devem conter informações relevantes em formato JSON.
 
-5. **Implementar Cache com Redis**:
-    - Configure Redis na aplicação.
-    - Implemente a lógica de cache para otimizar a performance.
+4. **Integração com Elasticsearch**
 
-## Deploy da Aplicação
+   - Implemente a indexação dos pedidos no **Elasticsearch**:
+     - Ao criar ou atualizar um pedido, sincronize os dados com o Elasticsearch.
+   - Implemente endpoints na API que permitam a busca e filtragem de pedidos utilizando as capacidades de pesquisa do Elasticsearch.
+   - Permita que os usuários realizem pesquisas por:
+     - Identificador do pedido.
+     - Status do pedido.
+     - Intervalo de datas.
+     - Itens contidos no pedido.
 
-1. **Deploy em um Serviço de Hospedagem**:
-    - Faça o deploy da aplicação em um serviço de hospedagem de sua escolha (Heroku, AWS, DigitalOcean, etc.).
-    - Garanta que a aplicação esteja acessível publicamente.
+5. **Clean Code e Boas Práticas**
 
-2. **Incluir Instruções de Deploy**:
-    - Adicione ao repositório um arquivo `DEPLOY.md` com instruções detalhadas de como fazer o deploy da aplicação.
+   - Aplique os princípios de **Clean Code** em toda a sua implementação.
+   - Utilize um padrão de código consistente e configure **ESLint** e **Prettier** no projeto.
+   - Documente o código quando necessário para melhorar a legibilidade.
 
-## Conclusão
+6. **Dockerização**
 
-Este teste técnico é projetado para avaliar suas habilidades em integrar diferentes tecnologias e criar uma API RESTful funcional e bem documentada usando NestJS. Ao seguir os requisitos e critérios de avaliação, você poderá demonstrar sua capacidade de trabalhar com sistemas complexos e tecnologias de ponta.
+   - Certifique-se de que a aplicação e todos os serviços necessários estejam corretamente containerizados.
+   - Utilize **Docker-compose** para orquestrar os contêineres.
 
-**Após concluir o teste, entre em contato com o recrutador e envie os links do repositório e do deploy da aplicação.**
+7. **Testes**
+
+   - Escreva testes unitários e/ou de integração para as principais funcionalidades da aplicação utilizando **Jest** (test runner padrão do Nest.js).
+   - Os testes devem cobrir, no mínimo, os serviços e controladores.
+
+8. **Documentação da API**
+
+   - Forneça documentação da API utilizando **Swagger** (integrado ao Nest.js).
+   - A documentação deve estar acessível através de uma rota, por exemplo, `/api-docs`.
+
+9. **Logs e Monitoramento**
+
+   - Implemente logs estruturados utilizando um middleware ou interceptador do Nest.js.
+   - Registre informações importantes como erros, acessos às rotas e eventos de negócio.
+
+### Diferenciais (Desejável)
+
+- **Monitoramento e Logging Avançado**
+
+  - Implemente ferramentas de monitoramento como **Prometheus** e **Grafana**.
+  - Configure logs centralizados utilizando **Elastic Stack** (ELK).
+
+### Observações
+
+- Caso não seja possível implementar todos os requisitos, explique as razões e descreva como você abordaria a solução.
+- Sinta-se à vontade para adicionar funcionalidades extras que julgar relevantes.
+- Demonstre criatividade e inovação em sua solução.
+
+## Entrega
+
+- O código deve estar disponível em um repositório Git (preferencialmente GitHub) público.
+- Inclua um arquivo `README.md` com:
+  - Instruções claras sobre como configurar e executar a aplicação.
+  - Descrição das funcionalidades implementadas.
+  - Possíveis limitações ou melhorias futuras.
+
+## Avaliação
+
+Os seguintes aspectos serão considerados na avaliação:
+
+- **Funcionalidade**: se a aplicação atende aos requisitos propostos.
+- **Qualidade do Código**: organização, legibilidade e aderência às boas práticas.
+- **Uso das Tecnologias**: implementação correta e eficaz das ferramentas solicitadas.
+- **Boas Práticas**: aplicação de princípios de Clean Code e padrões de projeto.
+- **Documentação**: clareza das instruções e documentação fornecidas.
+- **Testes**: qualidade e abrangência dos testes implementados.
+- **Histórico de Commits**: uso adequado do Git com commits bem descritos.
+
+---
+
+Boa sorte! Estamos ansiosos para conhecer o seu trabalho e potencial.
 
