@@ -1,0 +1,57 @@
+version: '3.5'
+
+services:
+  db:
+    image: postgres:15
+    restart: always
+    container_name: ${APP_NAME}-db
+    environment:
+      POSTGRES_USER: starsoft
+      POSTGRES_PASSWORD: starsoft
+      POSTGRES_DB: starsoft
+    volumes:
+      - ./pgdata:/var/lib/postgresql/data
+    ports:
+      - '${DB_PORT}:${DB_PORT}'
+    networks:
+      - external-net
+
+  # app:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile
+  #   container_name: ${APP_NAME}
+  #   ports:
+  #     - '${PORT}:${PORT}'
+  #   depends_on:
+  #     - db
+  #   volumes:
+  #     - .:/app
+  #   environment:
+  #     - DB_HOST=db
+  #     - DB_PORT=5432
+  #     - DB_USERNAME=${DB_USERNAME}
+  #     - DB_PASSWORD=${DB_PASSWORD}
+  #     - DB_NAME=${DB_NAME}
+  #     - NODE_ENV=development
+  #     - PORT=${PORT}
+  #   networks:
+  #     - external-net
+
+  pgadmin:
+    image: dpage/pgadmin4
+    restart: always
+    container_name: ${APP_NAME}-pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: pgadmin4
+    ports:
+      - '5050:80'
+    depends_on:
+      - db
+    networks:
+      - external-net
+
+networks:
+  external-net:
+    external: true

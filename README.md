@@ -1,123 +1,98 @@
-# Teste para Desenvolvedor(a) Back-End Node.js/Nest.js
+<p align="center">
+  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
+</p>
 
-## Introdução
+[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
+[circleci-url]: https://circleci.com/gh/nestjs/nest
 
-Bem-vindo(a) ao processo seletivo para a posição de **Desenvolvedor(a) Back-End** em nossa equipe! Este teste tem como objetivo avaliar suas habilidades técnicas em Node.js, Nest.js e outras tecnologias mencionadas na descrição da vaga.
+  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
+    <p align="center">
+<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
+<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
+<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
+<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
+<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
+<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
+<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
+  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
+    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
+  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
+</p>
+  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
+  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
 
-## Instruções
+## Description
 
-- Faça um **fork** deste repositório para o seu GitHub pessoal.
-- Desenvolva as soluções solicitadas abaixo, seguindo as **melhores práticas de desenvolvimento**.
-- Após a conclusão, envie o link do seu repositório para avaliação.
-- Sinta-se à vontade para adicionar qualquer documentação ou comentários que julgar necessário.
+[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
 
-## Desafio
+## Project setup
 
-### Contexto
+```bash
+$ pnpm install
+```
 
-Você foi designado para desenvolver um sistema de gerenciamento de pedidos para um e-commerce. O sistema deve permitir que os clientes:
+## Compile and run the project
 
-- Criem, visualizem, atualizem e cancelem pedidos.
-- Cada pedido deve conter: identificador do pedido, itens (com quantidade e preço), status do pedido (pendente, processando, enviado, entregue, cancelado), data de criação e atualização.
-- O sistema deve comunicar eventos de criação e atualização de pedidos via **Kafka** para outros serviços (por exemplo, sistema de estoque, notificações).
-- O sistema deve indexar e permitir a busca de pedidos utilizando **Elasticsearch**, proporcionando pesquisas avançadas.
+```bash
+# development
+$ pnpm run start
 
-### Requisitos
+# watch mode
+$ pnpm run start:dev
 
-1. **Configuração do Ambiente**
+# production mode
+$ pnpm run start:prod
+```
 
-   - Configure um ambiente de desenvolvimento utilizando **Docker** e **Docker-compose**, incluindo:
-     - Aplicação Node.js com **Nest.js**.
-     - Banco de dados **PostgreSQL**.
-     - Servidor **Kafka** (pode utilizar imagens como `bitnami/kafka` ou similares).
-     - **Elasticsearch** para indexação e busca .
-   - A aplicação deve ser iniciada com um único comando (`docker-compose up`).
+## Run tests
 
-2. **API RESTful**
+```bash
+# unit tests
+$ pnpm run test
 
-   - Implemente uma API RESTful para gerenciamento de pedidos.
-   - Utilize **Nest.js** seguindo as melhores práticas para estruturação de módulos, controladores e serviços.
-   - Utilize **TypeORM** para interação com o banco de dados **PostgreSQL**.
-   - Assegure-se de que as operações de CRUD (Create, Read, Update, Delete) estão implementadas.
+# e2e tests
+$ pnpm run test:e2e
 
-3. **Comunicação via Kafka**
+# test coverage
+$ pnpm run test:cov
+```
 
-   - Implemente a publicação de eventos em **Kafka**:
-     - Ao criar um novo pedido, publique um evento `order_created`.
-     - Ao atualizar o status de um pedido, publique um evento `order_status_updated`.
-     - Os eventos devem conter informações relevantes em formato JSON.
+## Deployment
 
-4. **Integração com Elasticsearch**
+When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
 
-   - Implemente a indexação dos pedidos no **Elasticsearch**:
-     - Ao criar ou atualizar um pedido, sincronize os dados com o Elasticsearch.
-   - Implemente endpoints na API que permitam a busca e filtragem de pedidos utilizando as capacidades de pesquisa do Elasticsearch.
-   - Permita que os usuários realizem pesquisas por:
-     - Identificador do pedido.
-     - Status do pedido.
-     - Intervalo de datas.
-     - Itens contidos no pedido.
+If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
 
-5. **Clean Code e Boas Práticas**
+```bash
+$ pnpm install -g @nestjs/mau
+$ mau deploy
+```
 
-   - Aplique os princípios de **Clean Code** em toda a sua implementação.
-   - Utilize um padrão de código consistente e configure **ESLint** e **Prettier** no projeto.
-   - Documente o código quando necessário para melhorar a legibilidade.
+With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
 
-6. **Dockerização**
+## Resources
 
-   - Certifique-se de que a aplicação e todos os serviços necessários estejam corretamente containerizados.
-   - Utilize **Docker-compose** para orquestrar os contêineres.
+Check out a few resources that may come in handy when working with NestJS:
 
-7. **Testes**
+- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
+- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
+- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
+- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
+- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
+- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
+- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
+- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
 
-   - Escreva testes unitários e/ou de integração para as principais funcionalidades da aplicação utilizando **Jest** (test runner padrão do Nest.js).
-   - Os testes devem cobrir, no mínimo, os serviços e controladores.
+## Support
 
-8. **Documentação da API**
+Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
 
-   - Forneça documentação da API utilizando **Swagger** (integrado ao Nest.js).
-   - A documentação deve estar acessível através de uma rota, por exemplo, `/api-docs`.
+## Stay in touch
 
-9. **Logs e Monitoramento**
+- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
+- Website - [https://nestjs.com](https://nestjs.com/)
+- Twitter - [@nestframework](https://twitter.com/nestframework)
 
-   - Implemente logs estruturados utilizando um middleware ou interceptador do Nest.js.
-   - Registre informações importantes como erros, acessos às rotas e eventos de negócio.
+## License
 
-### Diferenciais (Desejável)
-
-- **Monitoramento e Logging Avançado**
-
-  - Implemente ferramentas de monitoramento como **Prometheus** e **Grafana**.
-  - Configure logs centralizados utilizando **Elastic Stack** (ELK).
-
-### Observações
-
-- Caso não seja possível implementar todos os requisitos, explique as razões e descreva como você abordaria a solução.
-- Sinta-se à vontade para adicionar funcionalidades extras que julgar relevantes.
-- Demonstre criatividade e inovação em sua solução.
-
-## Entrega
-
-- O código deve estar disponível em um repositório Git (preferencialmente GitHub) público.
-- Inclua um arquivo `README.md` com:
-  - Instruções claras sobre como configurar e executar a aplicação.
-  - Descrição das funcionalidades implementadas.
-  - Possíveis limitações ou melhorias futuras.
-
-## Avaliação
-
-Os seguintes aspectos serão considerados na avaliação:
-
-- **Funcionalidade**: se a aplicação atende aos requisitos propostos.
-- **Qualidade do Código**: organização, legibilidade e aderência às boas práticas.
-- **Uso das Tecnologias**: implementação correta e eficaz das ferramentas solicitadas.
-- **Boas Práticas**: aplicação de princípios de Clean Code e padrões de projeto.
-- **Documentação**: clareza das instruções e documentação fornecidas.
-- **Testes**: qualidade e abrangência dos testes implementados.
-- **Histórico de Commits**: uso adequado do Git com commits bem descritos.
-
----
-
-Boa sorte! Estamos ansiosos para conhecer o seu trabalho e potencial.
-
+Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
