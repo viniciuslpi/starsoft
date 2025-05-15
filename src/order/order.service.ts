@@ -26,7 +26,9 @@ export class OrderService {
   }
 
   async findOne(id: string) {
-    return await this.orderRepository.findOneBy({ id });
+    const order = await this.orderRepository.findOneBy({ id });
+    if (!order) throw new NotFoundException('Pedido não encontrado');
+    return order;
   }
 
   async update(id: string, data: UpdateOrderDto) {
