@@ -1,25 +1,26 @@
 import {
   Controller,
-  Get,
   Post,
   Body,
+  Get,
   Param,
   Patch,
   Delete,
 } from '@nestjs/common';
 import { OrderService } from './order.service';
-import { CreateOrderSchema } from './schemas/create-order.dto';
-import { UpdateOrderSchema } from './schemas/update-order.dto';
-import { zodValidator } from 'src/common/util/zod-parse.util';
+import { ApiTags, ApiBody } from '@nestjs/swagger';
+import { CreateOrderDto } from './dtos/create-order.dto';
+import { UpdateOrderDto } from './dtos/update-order.dto';
 
+@ApiTags('orders')
 @Controller('orders')
 export class OrderController {
   constructor(private readonly orderService: OrderService) {}
 
   @Post()
-  async create(@Body() body: unknown) {
-    const data = zodValidator(CreateOrderSchema, body);
-    return this.orderService.create(data);
+  @ApiBody({ type: CreateOrderDto })
+  create(@Body() createOrderDto: CreateOrderDto) {
+    return this.orderService.create(createOrderDto);
   }
 
   @Get()
@@ -33,18 +34,17 @@ export class OrderController {
   }
 
   @Patch(':id')
-  async update(@Param('id') id: string, @Body() body: unknown) {
-    const data = zodValidator(UpdateOrderSchema, body);
-    return this.orderService.update(id, data);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.orderService.remove(id);
+  update(@Param('id') id: string, @Body() updateOrderDto: UpdateOrderDto) {
+    return this.orderService.update(id, updateOrderDto);
   }
 
   @Patch(':id/cancel')
   cancel(@Param('id') id: string) {
     return this.orderService.cancel(id);
+  }
+
+  @Delete(':id')
+  remove(@Param('id') id: string) {
+    return this.orderService.remove(id);
   }
 }
