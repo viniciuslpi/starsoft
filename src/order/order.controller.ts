@@ -42,4 +42,9 @@ export class OrderController {
   remove(@Param('id') id: string) {
     return this.orderService.remove(id);
   }
+
+  @Patch(':id/cancel')
+  cancel(@Param('id') id: string) {
+    return this.orderService.cancel(id);
+  }
 }

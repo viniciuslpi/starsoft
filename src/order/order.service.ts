@@ -1,7 +1,11 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Order } from './entities/order.entity';
+import { Order, OrderStatus } from './entities/order.entity';
 import { CreateOrderDto } from './schemas/create-order.dto';
 import { UpdateOrderDto } from './schemas/update-order.dto';
 
@@ -12,17 +16,17 @@ export class OrderService {
     private readonly orderRepository: Repository<Order>,
   ) {}
 
-  create(data: CreateOrderDto) {
+  async create(data: CreateOrderDto) {
     const order = this.orderRepository.create(data);
-    return this.orderRepository.save(order);
+    return await this.orderRepository.save(order);
   }
 
-  findAll() {
-    return this.orderRepository.find();
+  async findAll() {
+    return await this.orderRepository.find();
   }
 
-  findOne(id: string) {
-    return this.orderRepository.findOneBy({ id });
+  async findOne(id: string) {
+    return await this.orderRepository.findOneBy({ id });
   }
 
   async update(id: string, data: UpdateOrderDto) {
@@ -36,5 +40,26 @@ export class OrderService {
     const order = await this.findOne(id);
     if (!order) throw new NotFoundException('Pedido não encontrado');
     return this.orderRepository.remove(order);
+  }
+
+  async cancel(id: string) {
+    const order = await this.orderRepository.findOneBy({ id });
+
+    if (!order) {
+      throw new NotFoundException('Pedido não encontrado');
+    }
+
+    if (order.status === 'entregue') {
+      throw new BadRequestException(
+        'Pedido já foi entregue e não pode ser cancelado',
+      );
+    }
+
+    if (order.status === 'cancelado') {
+      throw new BadRequestException('Pedido já está cancelado');
+    }
+
+    order.status = OrderStatus.CANCELLED;
+    return this.orderRepository.save(order);
   }
 }
