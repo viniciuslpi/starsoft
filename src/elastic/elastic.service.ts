@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ElasticsearchService } from '@nestjs/elasticsearch';
+import { SearchOrdersQueryDto } from 'src/order/dtos/find-all-query.dto';
 import { Order } from 'src/order/entities/order.entity';
 
 @Injectable()
@@ -29,25 +30,52 @@ export class ElasticService {
     }
   }
 
+  async findAll(query: SearchOrdersQueryDto) {
+    const { search, status, startDate, endDate } = query;
+
+    const must: any[] = [];
+
+    if (search) {
+      must.push({
+        multi_match: {
+          query: search,
+          fields: ['id', 'items.name'],
+        },
+      });
+    }
+
+    if (status) {
+      must.push({ match: { status: status } });
+    }
+
+    if (startDate && endDate) {
+      must.push({
+        range: {
+          createdAt: {
+            gte: startDate,
+            lte: endDate,
+          },
+        },
+      });
+    }
+
+    const result = await this.elasticsearchService.search({
+      index: 'orders',
+      query: {
+        bool: {
+          must,
+        },
+      },
+    });
+
+    return result.hits.hits.map((hit) => hit._source);
+  }
+
   async removeOrder(id: string): Promise<any> {
     return this.elasticsearchService.delete({
       index: this.index,
       id,
     });
-  }
-
-  async searchOrder(term: string) {
-    const { hits } = await this.elasticsearchService.search<Order>({
-      index: this.index,
-      query: {
-        multi_match: {
-          query: term,
-          fields: ['id', 'status', 'items.name'],
-        },
-      },
-    });
-
-    return hits.hits.map((hit) => hit._source);
   }
 
   async updateOrder(order: any) {
