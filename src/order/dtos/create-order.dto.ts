@@ -41,6 +41,7 @@ export class CreateOrderDto {
     enum: OrderStatus,
     required: false,
     example: OrderStatus.PENDING,
+    default: OrderStatus.PENDING,
   })
   @IsOptional()
   @IsEnum(OrderStatus)

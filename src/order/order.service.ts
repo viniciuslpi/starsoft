@@ -25,6 +25,7 @@ export class OrderService {
     await this.elasticService.indexOrder(saved);
     return saved;
   }
+
   async findOne(id: string) {
     const order = await this.orderRepository.findOneBy({ id });
     if (!order) throw new NotFoundException('Pedido não encontrado');
