@@ -8,7 +8,7 @@ import { Repository } from 'typeorm';
 import { Order, OrderStatus } from './entities/order.entity';
 import { CreateOrderDto } from './dtos/create-order.dto';
 import { UpdateOrderDto } from './dtos/update-order.dto';
-import { ElasticService } from 'src/elastic/elastic.service';
+import { ElasticService } from '../elastic/elastic.service';
 import { SearchOrdersQueryDto } from './dtos/find-all-query.dto';
 
 @Injectable()
