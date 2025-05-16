@@ -8,17 +8,21 @@ import { Repository } from 'typeorm';
 import { Order, OrderStatus } from './entities/order.entity';
 import { CreateOrderDto } from './dtos/create-order.dto';
 import { UpdateOrderDto } from './dtos/update-order.dto';
+import { ElasticService } from 'src/elastic/elastic.service';
 
 @Injectable()
 export class OrderService {
   constructor(
     @InjectRepository(Order)
     private readonly orderRepository: Repository<Order>,
+    private readonly elasticService: ElasticService,
   ) {}
 
   async create(data: CreateOrderDto) {
     const order = this.orderRepository.create(data);
-    return await this.orderRepository.save(order);
+    const saved = await this.orderRepository.save(order);
+    await this.elasticService.indexOrder(saved);
+    return saved;
   }
 
   async findAll() {
@@ -26,8 +30,9 @@ export class OrderService {
   }
 
   async findOne(id: string) {
-    const order = await this.orderRepository.findOneBy({ id });
+    const order = await this.elasticService.findById(id);
     if (!order) throw new NotFoundException('Pedido não encontrado');
+
     return order;
   }
 
@@ -35,13 +40,8 @@ export class OrderService {
     const order = await this.orderRepository.preload({ id, ...data });
     if (!order) throw new NotFoundException('Pedido não encontrado');
 
+    await this.elasticService.indexOrder(order);
     return this.orderRepository.save(order);
-  }
-
-  async remove(id: string) {
-    const order = await this.findOne(id);
-    if (!order) throw new NotFoundException('Pedido não encontrado');
-    return this.orderRepository.remove(order);
   }
 
   async cancel(id: string) {
@@ -62,6 +62,16 @@ export class OrderService {
     }
 
     order.status = OrderStatus.CANCELLED;
+    await this.elasticService.indexOrder(order);
     return this.orderRepository.save(order);
+  }
+
+  async remove(id: string) {
+    const order = await this.findOne(id);
+    if (!order) throw new NotFoundException('Pedido não encontrado');
+
+    await this.orderRepository.remove(order);
+    await this.elasticService.removeOrder(id);
+    return order;
   }
 }
