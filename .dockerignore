@@ -1,0 +1,4 @@
+node_modules
+pgdata
+*.log
+docker-compose.override.yml
