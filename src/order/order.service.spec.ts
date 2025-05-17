@@ -5,6 +5,7 @@ import { Order, OrderStatus } from './entities/order.entity';
 import { Repository } from 'typeorm';
 import { NotFoundException, BadRequestException } from '@nestjs/common';
 import { ElasticService } from '../elastic/elastic.service';
+import { KafkaService } from '../kafka/kafka.service';
 
 const mockOrderRepository = {
   create: jest.fn(),
@@ -18,6 +19,10 @@ const mockElasticService = {
   indexOrder: jest.fn(),
   findAll: jest.fn(),
   removeOrder: jest.fn(),
+};
+
+const mockKafkaService = {
+  emit: jest.fn(),
 };
 
 describe('OrderService', () => {
@@ -36,6 +41,10 @@ describe('OrderService', () => {
           provide: ElasticService,
           useValue: mockElasticService,
         },
+        {
+          provide: KafkaService,
+          useValue: mockKafkaService,
+        },
       ],
     }).compile();
 
@@ -45,9 +54,14 @@ describe('OrderService', () => {
   });
 
   describe('create', () => {
-    it('should create and index an order', async () => {
+    it('should create, index, and emit order_created event', async () => {
       const dto = { customerName: 'John', items: [] };
-      const mockSavedOrder = { id: '1', ...dto };
+      const mockSavedOrder = {
+        id: '1',
+        status: OrderStatus.PENDING,
+        createdAt: new Date(),
+        ...dto,
+      };
 
       mockOrderRepository.create.mockReturnValue(dto);
       mockOrderRepository.save.mockResolvedValue(mockSavedOrder);
@@ -59,6 +73,12 @@ describe('OrderService', () => {
       expect(mockElasticService.indexOrder).toHaveBeenCalledWith(
         mockSavedOrder,
       );
+      expect(mockKafkaService.emit).toHaveBeenCalledWith('order_created', {
+        id: mockSavedOrder.id,
+        status: mockSavedOrder.status,
+        createdAt: mockSavedOrder.createdAt,
+        items: mockSavedOrder.items,
+      });
       expect(result).toEqual(mockSavedOrder);
     });
   });
@@ -95,9 +115,13 @@ describe('OrderService', () => {
   });
 
   describe('update', () => {
-    it('should update and index the order', async () => {
+    it('should update, index, and emit order_status_updated', async () => {
       const dto = { status: OrderStatus.SHIPPED };
-      const mockOrder = { id: '1', ...dto };
+      const mockOrder = {
+        id: '1',
+        updatedAt: new Date(),
+        ...dto,
+      };
 
       mockOrderRepository.preload.mockResolvedValue(mockOrder);
       mockOrderRepository.save.mockResolvedValue(mockOrder);
@@ -109,6 +133,14 @@ describe('OrderService', () => {
         ...dto,
       });
       expect(mockElasticService.indexOrder).toHaveBeenCalledWith(mockOrder);
+      expect(mockKafkaService.emit).toHaveBeenCalledWith(
+        'order_status_updated',
+        {
+          id: mockOrder.id,
+          status: mockOrder.status,
+          updatedAt: mockOrder.updatedAt,
+        },
+      );
       expect(result).toEqual(mockOrder);
     });
 
@@ -122,10 +154,11 @@ describe('OrderService', () => {
   });
 
   describe('cancel', () => {
-    it('should cancel a pending order', async () => {
+    it('should cancel a pending order and emit event', async () => {
       const mockOrder = {
         id: '1',
         status: OrderStatus.PENDING,
+        updatedAt: new Date(),
       };
 
       jest.spyOn(service, 'findOne').mockResolvedValueOnce(mockOrder as any);
@@ -138,6 +171,14 @@ describe('OrderService', () => {
 
       expect(result.status).toEqual(OrderStatus.CANCELLED);
       expect(mockElasticService.indexOrder).toHaveBeenCalledWith(result);
+      expect(mockKafkaService.emit).toHaveBeenCalledWith(
+        'order_status_updated',
+        {
+          id: result.id,
+          status: result.status,
+          updatedAt: result.updatedAt,
+        },
+      );
     });
 
     it('should throw if order is already delivered', async () => {
