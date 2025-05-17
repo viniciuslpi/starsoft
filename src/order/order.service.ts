@@ -10,6 +10,7 @@ import { CreateOrderDto } from './dtos/create-order.dto';
 import { UpdateOrderDto } from './dtos/update-order.dto';
 import { ElasticService } from '../elastic/elastic.service';
 import { SearchOrdersQueryDto } from './dtos/find-all-query.dto';
+import { KafkaService } from '../kafka/kafka.service';
 
 @Injectable()
 export class OrderService {
@@ -17,12 +18,22 @@ export class OrderService {
     @InjectRepository(Order)
     private readonly orderRepository: Repository<Order>,
     private readonly elasticService: ElasticService,
+    private readonly kafkaService: KafkaService,
   ) {}
 
   async create(data: CreateOrderDto) {
     const order = this.orderRepository.create(data);
     const saved = await this.orderRepository.save(order);
+
     await this.elasticService.indexOrder(saved);
+
+    await this.kafkaService.emit('order_created', {
+      id: saved.id,
+      status: saved.status,
+      createdAt: saved.createdAt,
+      items: saved.items,
+    });
+
     return saved;
   }
 
@@ -41,7 +52,15 @@ export class OrderService {
     if (!order) throw new NotFoundException('Pedido não encontrado');
 
     await this.elasticService.indexOrder(order);
-    return this.orderRepository.save(order);
+    const updated = await this.orderRepository.save(order);
+
+    await this.kafkaService.emit('order_status_updated', {
+      id: updated.id,
+      status: updated.status,
+      updatedAt: updated.updatedAt,
+    });
+
+    return updated;
   }
 
   async cancel(id: string) {
@@ -60,7 +79,15 @@ export class OrderService {
     order.status = OrderStatus.CANCELLED;
 
     await this.elasticService.indexOrder(order);
-    return this.orderRepository.save(order);
+    const cancelled = await this.orderRepository.save(order);
+
+    await this.kafkaService.emit('order_status_updated', {
+      id: cancelled.id,
+      status: cancelled.status,
+      updatedAt: cancelled.updatedAt,
+    });
+
+    return cancelled;
   }
 
   async remove(id: string) {

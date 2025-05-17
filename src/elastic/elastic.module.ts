@@ -5,7 +5,7 @@ import { ElasticService } from './elastic.service';
 @Module({
   imports: [
     ElasticsearchModule.register({
-      node: 'http://localhost:9200',
+      node: 'http://elasticsearch:9200',
     }),
   ],
   providers: [ElasticService],
