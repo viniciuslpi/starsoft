@@ -4,11 +4,15 @@ import { Logger, ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { envSchema } from './config/env.schema';
 import { setupSwagger } from './config/swagger.config';
+import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
+import { HttpExceptionFilter } from './common/filters/http.exception.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
+  app.useGlobalInterceptors(new LoggingInterceptor());
+  app.useGlobalFilters(new HttpExceptionFilter());
 
   const configService = app.get(ConfigService);
   const parsed = envSchema.safeParse(process.env);

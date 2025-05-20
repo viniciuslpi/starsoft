@@ -6,6 +6,7 @@ import { OrderService } from './order.service';
 import { OrderController } from './order.controller';
 import { ElasticModule } from 'src/elastic/elastic.module';
 import { KafkaModule } from 'src/kafka/kafka.module';
+import { AppLogger } from 'src/common/logger/app.logger';
 
 @Module({
   imports: [
@@ -14,6 +15,6 @@ import { KafkaModule } from 'src/kafka/kafka.module';
     KafkaModule,
   ],
   controllers: [OrderController],
-  providers: [OrderService],
+  providers: [OrderService, AppLogger],
 })
 export class OrderModule {}

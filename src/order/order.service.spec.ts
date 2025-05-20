@@ -6,6 +6,7 @@ import { Repository } from 'typeorm';
 import { NotFoundException, BadRequestException } from '@nestjs/common';
 import { ElasticService } from '../elastic/elastic.service';
 import { KafkaService } from '../kafka/kafka.service';
+import { AppLogger } from '../common/logger/app.logger';
 
 const mockOrderRepository = {
   create: jest.fn(),
@@ -23,6 +24,10 @@ const mockElasticService = {
 
 const mockKafkaService = {
   emit: jest.fn(),
+};
+
+const mockLogger = {
+  logBusiness: jest.fn(),
 };
 
 describe('OrderService', () => {
@@ -45,6 +50,10 @@ describe('OrderService', () => {
           provide: KafkaService,
           useValue: mockKafkaService,
         },
+        {
+          provide: AppLogger,
+          useValue: mockLogger,
+        },
       ],
     }).compile();
 
@@ -54,7 +63,7 @@ describe('OrderService', () => {
   });
 
   describe('create', () => {
-    it('should create, index, and emit order_created event', async () => {
+    it('should create, index, emit event and log', async () => {
       const dto = { customerName: 'John', items: [] };
       const mockSavedOrder = {
         id: '1',
@@ -79,18 +88,24 @@ describe('OrderService', () => {
         createdAt: mockSavedOrder.createdAt,
         items: mockSavedOrder.items,
       });
+      expect(mockLogger.logBusiness).toHaveBeenCalledWith('order_created', {
+        id: mockSavedOrder.id,
+      });
       expect(result).toEqual(mockSavedOrder);
     });
   });
 
   describe('findOne', () => {
-    it('should return order if found', async () => {
+    it('should return order and log if found', async () => {
       const mockOrder = { id: '1' };
       mockOrderRepository.findOneBy.mockResolvedValue(mockOrder);
 
       const result = await service.findOne('1');
 
       expect(result).toEqual(mockOrder);
+      expect(mockLogger.logBusiness).toHaveBeenCalledWith('order_fetched', {
+        id: '1',
+      });
     });
 
     it('should throw if not found', async () => {
@@ -101,7 +116,7 @@ describe('OrderService', () => {
   });
 
   describe('findAll', () => {
-    it('should call elasticService.findAll with query', async () => {
+    it('should search orders and log', async () => {
       const query = { search: 'pizza' };
       const mockResult = [{ id: '1' }];
 
@@ -110,12 +125,15 @@ describe('OrderService', () => {
       const result = await service.findAll(query);
 
       expect(mockElasticService.findAll).toHaveBeenCalledWith(query);
+      expect(mockLogger.logBusiness).toHaveBeenCalledWith('order_search', {
+        query,
+      });
       expect(result).toEqual(mockResult);
     });
   });
 
   describe('update', () => {
-    it('should update, index, and emit order_status_updated', async () => {
+    it('should update, index, emit event and log', async () => {
       const dto = { status: OrderStatus.SHIPPED };
       const mockOrder = {
         id: '1',
@@ -141,6 +159,10 @@ describe('OrderService', () => {
           updatedAt: mockOrder.updatedAt,
         },
       );
+      expect(mockLogger.logBusiness).toHaveBeenCalledWith('order_updated', {
+        id: '1',
+        status: OrderStatus.SHIPPED,
+      });
       expect(result).toEqual(mockOrder);
     });
 
@@ -154,7 +176,7 @@ describe('OrderService', () => {
   });
 
   describe('cancel', () => {
-    it('should cancel a pending order and emit event', async () => {
+    it('should cancel, index, emit event and log', async () => {
       const mockOrder = {
         id: '1',
         status: OrderStatus.PENDING,
@@ -179,6 +201,9 @@ describe('OrderService', () => {
           updatedAt: result.updatedAt,
         },
       );
+      expect(mockLogger.logBusiness).toHaveBeenCalledWith('order_cancelled', {
+        id: result.id,
+      });
     });
 
     it('should throw if order is already delivered', async () => {
@@ -201,7 +226,7 @@ describe('OrderService', () => {
   });
 
   describe('remove', () => {
-    it('should remove and de-index an order', async () => {
+    it('should remove, de-index and log', async () => {
       const mockOrder = { id: '1' };
 
       jest.spyOn(service, 'findOne').mockResolvedValueOnce(mockOrder as any);
@@ -211,6 +236,9 @@ describe('OrderService', () => {
 
       expect(mockOrderRepository.remove).toHaveBeenCalledWith(mockOrder);
       expect(mockElasticService.removeOrder).toHaveBeenCalledWith('1');
+      expect(mockLogger.logBusiness).toHaveBeenCalledWith('order_removed', {
+        id: '1',
+      });
       expect(result).toEqual(mockOrder);
     });
   });

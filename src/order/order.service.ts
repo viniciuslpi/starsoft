@@ -11,6 +11,7 @@ import { UpdateOrderDto } from './dtos/update-order.dto';
 import { ElasticService } from '../elastic/elastic.service';
 import { SearchOrdersQueryDto } from './dtos/find-all-query.dto';
 import { KafkaService } from '../kafka/kafka.service';
+import { AppLogger } from '../common/logger/app.logger';
 
 @Injectable()
 export class OrderService {
@@ -19,6 +20,7 @@ export class OrderService {
     private readonly orderRepository: Repository<Order>,
     private readonly elasticService: ElasticService,
     private readonly kafkaService: KafkaService,
+    private readonly logger: AppLogger,
   ) {}
 
   async create(data: CreateOrderDto) {
@@ -34,17 +36,26 @@ export class OrderService {
       items: saved.items,
     });
 
+    this.logger.logBusiness('order_created', { id: saved.id });
+
     return saved;
   }
 
   async findOne(id: string) {
     const order = await this.orderRepository.findOneBy({ id });
     if (!order) throw new NotFoundException('Pedido não encontrado');
+
+    this.logger.logBusiness('order_fetched', { id });
+
     return order;
   }
 
   async findAll(query: SearchOrdersQueryDto) {
-    return await this.elasticService.findAll(query);
+    const results = await this.elasticService.findAll(query);
+
+    this.logger.logBusiness('order_search', { query });
+
+    return results;
   }
 
   async update(id: string, data: UpdateOrderDto) {
@@ -59,6 +70,8 @@ export class OrderService {
       status: updated.status,
       updatedAt: updated.updatedAt,
     });
+
+    this.logger.logBusiness('order_updated', { id, status: updated.status });
 
     return updated;
   }
@@ -87,6 +100,8 @@ export class OrderService {
       updatedAt: cancelled.updatedAt,
     });
 
+    this.logger.logBusiness('order_cancelled', { id });
+
     return cancelled;
   }
 
@@ -95,6 +110,8 @@ export class OrderService {
 
     await this.orderRepository.remove(order);
     await this.elasticService.removeOrder(id);
+
+    this.logger.logBusiness('order_removed', { id });
 
     return order;
   }
